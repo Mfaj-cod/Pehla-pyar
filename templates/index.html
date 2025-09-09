@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Crypto Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="text-center mb-4">Top 10 Cryptocurrencies</h1>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-striped table-hover text-center align-middle">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Symbol</th>
+          <th>Price (USD)</th>
+          <th>Market Cap</th>
+          <th>24h % Change</th>
+        </tr>
+      </thead>
+      <tbody id="crypto-table">
+        {% for crypto in cryptos %}
+        <tr>
+          <td>{{ crypto.cmc_rank }}</td>
+          <td>{{ crypto.name }}</td>
+          <td>{{ crypto.symbol }}</td>
+          <td>${{ "%.2f"|format(crypto.quote.USD.price) }}</td>
+          <td>${{ "{:,.0f}".format(crypto.quote.USD.market_cap) }}</td>
+          <td class="{% if crypto.quote.USD.percent_change_24h >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {{ "%.2f"|format(crypto.quote.USD.percent_change_24h) }}%
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function loadCryptos() {
+    try {
+      const response = await fetch("/api/cryptos");
+      const cryptos = await response.json();
+
+      let rows = "";
+      cryptos.forEach(c => {
+        let price = `$${c.quote.USD.price.toFixed(2)}`;
+        let marketCap = `$${c.quote.USD.market_cap.toLocaleString()}`;
+        let change = c.quote.USD.percent_change_24h.toFixed(2);
+        let changeClass = change >= 0 ? "text-success" : "text-danger";
+
+        rows += `
+          <tr>
+            <td>${c.cmc_rank}</td>
+            <td>${c.name}</td>
+            <td>${c.symbol}</td>
+            <td>${price}</td>
+            <td>${marketCap}</td>
+            <td class="${changeClass}">${change}%</td>
+          </tr>`;
+      });
+
+      document.getElementById("crypto-table").innerHTML = rows;
+    } catch (error) {
+      console.error("Error loading cryptos:", error);
+    }
+  }
+
+  setInterval(loadCryptos, 10000);
+</script>
+{% endblock %}
