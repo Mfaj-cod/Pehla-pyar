@@ -10,3 +10,10 @@ h1 {
 .table th {
     background-color: #212529 !important;
 }
+
+nav {
+    background-color: #343a40 !important;
+    position: sticky !important;
+    top: 0;
+    z-index: 1000;
+}
